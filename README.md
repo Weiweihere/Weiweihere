@@ -1,4 +1,4 @@
-- 👋 Hi, I’m @Weiweihere
+- 👋 Hi, I’m @Weiqing Zhu
 - 👀 I’m interested in data mining
 - 🌱 I’m currently learning web mining and data mining
 - 💞️ I’m looking to collaborate on ...
