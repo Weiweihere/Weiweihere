@@ -1,0 +1,34 @@
+about string matching:
+if using doesn`t work for datetime
+SELECT  ?entitySLabel (year(?date) as ?year) ?cityLabel WHERE {
+   # VALUES ?professions {wd:Q177220 wd:Q639669}
+       ?entityS wdt:P569 ?date.
+       #?entityS wdt:P1477 ?name.
+       #?entityS wdt:P106 ?professions
+       ?entityS  wdt:P21 wd:Q6581097.
+       ?entityS  wdt:P69 wd:Q317070.
+       ?entityS  wdt:P19 ?city
+    FILTER (datatype(?date) = xsd:dateTime)
+    FILTER (datatype(?date) = xsd:dateTime)
+#    FILTER (month(?date) = 11) # date
+#     FILTER (day(?date) = 6) # month
+    FILTER (?date = "1962-11-06"^^xsd:dateTime)
+   
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+}
+
+so i choose to use:
+
+def search(var_gender,var_date,var_education):
+   
+    endpoint_url = "https://query.wikidata.org/sparql"
+
+    query = """SELECT ?entitySLabel ?dod ?cityLabel 
+WHERE {
+  VALUES ?dod {"1962-11-06"^^xsd:dateTime}
+  ?dod ^wdt:P569 ?entityS.
+  # ?entityS wdt:P21 wd:"""+var_gender+""".
+  ?entityS wdt:P69 wd:"""+var_education+""".
+  ?entityS wdt:P19 ?city.
+  # FILTER (datatype(?date) = xsd:dateTime)
+  # FILTER (?date = "var_date"^^xsd:dateTime)
