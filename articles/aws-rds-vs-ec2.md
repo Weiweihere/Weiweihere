@@ -2,26 +2,24 @@
 
 When a cloud bill grows, the first instinct is often to blame the service itself.
 
-Recently, I reviewed the AWS cost of a small internal project. The total bill had been averaging around **€250 per month**, and **Amazon RDS** was the largest cost driver. The database was running PostgreSQL on **db.t4g.large (2 vCPU / 8 GiB RAM)**.
+In one recent AWS cost review, **Amazon RDS** accounted for a disproportionate share of the monthly cloud bill. The immediate question was:
 
-At first glance, the obvious question was:
+> Should a small workload stay on RDS, or would it make more sense to run PostgreSQL directly on EC2?
 
-> Should we move the database from RDS to PostgreSQL running directly on EC2?
+Before changing the architecture, I looked at the workload rather than the price tag.
 
-But before changing the architecture, I checked the workload.
+Over an extended monitoring period, the database showed:
 
-Over roughly six months, the database showed:
-
-- **CPU utilization:** mostly **3.5–4.5%**, with peaks around **6–6.5%**
-- **Freeable memory:** mostly **4.6–5.1 GiB**
-- **Database connections:** generally low
+- **CPU utilization:** consistently in the low single digits, including during peaks
+- **Freeable memory:** substantial headroom
+- **Database connections:** well below the available capacity
 - **Read/write IOPS:** low
-- **Disk queue depth:** close to zero for most of the period
+- **Disk queue depth:** close to zero most of the time
 - **Query latency:** low and stable
 
-The problem was not necessarily RDS.
+That changed the diagnosis.
 
-The database was simply **over-provisioned**.
+The issue was not necessarily RDS itself. The database was simply **over-provisioned**.
 
 ## 1. Before replacing RDS, check whether you are over-provisioned
 
@@ -47,7 +45,7 @@ ask:
 
 > “Am I paying for an RDS instance much larger than my workload actually needs?”
 
-In my case, downsizing from **db.t4g.large (8 GiB RAM)** to **db.t4g.medium (4 GiB RAM)** was the more reasonable first step.
+In this example, **downsizing within RDS** was the more reasonable first step than moving the database to EC2.
 
 ## 2. The metrics I would check before downsizing RDS
 
@@ -57,9 +55,7 @@ I would look at at least one to several weeks of CloudWatch history, and prefera
 
 ### CPUUtilization
 
-If CPU stays very low for months and even peak periods remain far below the instance capacity, the database may have excess compute capacity.
-
-In this case, utilization stayed around 4% for most of six months.
+If CPU stays very low for a long period and even peak periods remain far below the instance capacity, the database may have excess compute capacity.
 
 ### FreeableMemory
 
@@ -79,7 +75,7 @@ Check both average and peak connections.
 
 If connection usage is far below the instance limit, connection capacity is probably not the reason you need a larger instance.
 
-If Lambda or another serverless workload connects to the database, also check whether you are using **RDS Proxy** or another connection pool.
+If a serverless or bursty application connects to the database, also check whether you are using a connection pool or a managed proxy.
 
 ### ReadIOPS / WriteIOPS
 
@@ -102,7 +98,7 @@ Infrastructure metrics are useful, but the application matters more.
 After a resize, monitor:
 
 - query latency
-- Lambda/database errors
+- database errors
 - timeouts
 - application response time
 
@@ -110,14 +106,14 @@ A cheaper database is not useful if it makes the application unreliable.
 
 ## 3. A simple way to choose an RDS instance
 
-I use a very simple mental model:
+I use a simple mental model:
 
 | Symptom | What to investigate |
 | --- | --- |
 | CPU consistently high | More vCPU / query optimization |
 | Memory consistently tight | More RAM / query and connection tuning |
 | High I/O or queue depth | Storage type, IOPS, query patterns |
-| Too many connections | Pooling, RDS Proxy, application connection handling |
+| Too many connections | Pooling, proxying, application connection handling |
 | CPU, memory, I/O and connections all low | Consider downsizing |
 
 The last case is easy to miss.
@@ -141,7 +137,7 @@ For a personal project or small team, the choice is not simply “managed = expe
 
 ### RDS is often a good fit when:
 
-- the database contains important business data
+- the database contains important data
 - recovery and backups matter
 - several people depend on the application
 - you do not want to maintain PostgreSQL and the underlying OS
@@ -156,9 +152,9 @@ For a personal project or small team, the choice is not simply “managed = expe
 - you have a clear backup and recovery plan
 - you genuinely need the additional control
 
-## 5. The lesson from this case
+## 5. The lesson
 
-The most useful lesson for me was not:
+The most useful lesson was not:
 
 > “RDS is too expensive.”
 
@@ -166,17 +162,17 @@ It was:
 
 > **Before replacing a managed service with cheaper infrastructure, first check whether you are simply over-provisioned.**
 
-In this case, moving directly from RDS to EC2 would have introduced additional operational work before addressing the simpler problem: the database instance was much larger than the observed workload required.
+Moving directly from RDS to EC2 can introduce additional operational work before addressing the simpler problem: the database instance may simply be larger than the workload requires.
 
-The safer sequence is:
+A safer sequence is:
 
 1. Measure the workload over a meaningful period.
 2. Right-size the existing managed service.
 3. Monitor the smaller configuration.
 4. Only then compare the remaining RDS premium with the operational cost of managing the database yourself.
 
-For small teams, that distinction matters. The cheapest infrastructure is not always the lowest-cost system once maintenance time and reliability are included.
+For small teams and individual developers, that distinction matters. The cheapest infrastructure is not always the lowest-cost system once maintenance time and reliability are included.
 
 ---
 
-*Note: AWS pricing varies by region, database engine, deployment model, storage configuration, and time. The numbers above describe one real workload pattern and should not be treated as universal sizing thresholds.*
+*Implementation details and figures in this article have been intentionally generalized. AWS pricing and appropriate sizing vary by region, database engine, deployment model, storage configuration, and workload.*
