@@ -2,13 +2,14 @@
 
 I work at the intersection of **AI research, data analysis, and technical implementation**.
 
-My current interests include:
+My current focus areas include **AI models and agents, semiconductors, data infrastructure, automation, cloud systems, and knowledge graphs**.
 
-- AI models, agents, and AI infrastructure
-- Semiconductors and technology research
-- Data pipelines, automation, and cloud infrastructure
-- Knowledge graphs and machine learning
-- Building practical tools from research workflows
+## Selected Work
+
+- **Cloud & Database Engineering** — Practical notes on AWS architecture, cost optimization, and database right-sizing
+- **Knowledge Graphs & Embeddings** — RDF2Vec-related research, graph embeddings, and semantic data workflows
+- **Data Collection & Automation** — Web data pipelines, research automation, and structured data extraction
+- **AI & Semiconductor Research** — Technical research on models, infrastructure, chips, and emerging technology trends
 
 ## Writing
 
@@ -16,7 +17,11 @@ My current interests include:
 
 ## Technical Interests
 
-**Python · SQL · PostgreSQL · AWS · Data Analysis · Automation · Knowledge Graphs**
+**Python · SQL · PostgreSQL · AWS · Data Analysis · Automation · Knowledge Graphs · Machine Learning**
+
+## What I'm building toward
+
+A personal collection of practical notes and projects around **AI, data, cloud infrastructure, and research tooling**.
 
 ## Contact
 
